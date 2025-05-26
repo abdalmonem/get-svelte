@@ -1,6 +1,6 @@
 {
   "name": "get-svelte",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A simple, powerful state management library for Svelte applications, inspired by GetX for Flutter",
   "main": "dist/index.js",
   "module": "dist/index.js",

@@ -89,17 +89,15 @@ Use the `GetListener` component to automatically react to controller state chang
   const taggedController = Get.find(CounterController, { tag: 'main-counter' });
 </script>
 
-<GetListener controller={counterController} builder={(controller) => {
-  return {
-    component: () => (
-      <div>
-        <h1>Counter: {controller.count}</h1>
-        <button on:click={() => controller.increment()}>Increment</button>
-        <button on:click={() => controller.decrement()}>Decrement</button>
-      </div>
-    )
-  };
-}} />
+<GetListener controller={counterController}>
+  {#snippet builder(controller)}
+    <div>
+      <h1>Counter: {controller.count}</h1>
+      <button on:click={() => controller.increment()}>Increment</button>
+      <button on:click={() => controller.decrement()}>Decrement</button>
+    </div>
+  {/snippet}
+</GetListener>
 ```
 
 ## API Reference
@@ -157,16 +155,18 @@ A Svelte component that listens to controller state changes and rebuilds its UI:
 ```svelte
 <GetListener
   controller={myController}
-  autoDestroy={true}
-  builder={(controller) => /* Return your component or element */}
-/>
+  autoDestroy={true}>
+  {#snippet builder(controller)}
+    <!-- Your UI that uses controller state -->
+    <div>Count: {controller.count}</div>
+  {/snippet}
+</GetListener>
 ```
 
 #### Props:
 
 - `controller`: The controller instance to listen to
 - `autoDestroy` (optional, default: `true`): Whether to automatically dispose the controller when the component is destroyed
-- `builder`: Function that receives the controller and returns the UI
 
 ## Examples
 
@@ -203,13 +203,15 @@ export class CounterController extends GetxController {
     : Get.put(new CounterController());
 </script>
 
-<GetListener controller={controller} builder={(ctrl) => (
-  <div>
-    <h2>Count: {ctrl.count}</h2>
-    <button on:click={() => ctrl.increment()}>+</button>
-    <button on:click={() => ctrl.decrement()}>-</button>
-  </div>
-)} />
+<GetListener controller={controller}>
+  {#snippet builder(ctrl)}
+    <div>
+      <h2>Count: {ctrl.count}</h2>
+      <button on:click={() => ctrl.increment()}>+</button>
+      <button on:click={() => ctrl.decrement()}>-</button>
+    </div>
+  {/snippet}
+</GetListener>
 ```
 
 ## Advanced Usage
@@ -242,9 +244,12 @@ const counter2Instance = Get.find(CounterController, { tag: 'counter2' });
 
 <GetListener 
   controller={controller} 
-  autoDestroy={false} 
-  builder={(ctrl) => (/* Your UI */)}
-/>
+  autoDestroy={false}>
+  {#snippet builder(ctrl)}
+    <!-- Your UI components here -->
+    <div>Data: {ctrl.data}</div>
+  {/snippet}
+</GetListener>
 
 <button on:click={cleanupController}>Dispose Controller</button>
 ```
