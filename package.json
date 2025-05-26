@@ -1,0 +1,59 @@
+{
+  "name": "get-svelte",
+  "version": "1.0.0",
+  "description": "A simple, powerful state management library for Svelte applications, inspired by GetX for Flutter",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "vite",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "svelte",
+    "state",
+    "management",
+    "getx",
+    "store",
+    "reactive",
+    "dependency-injection"
+  ],
+  "author": {
+    "name": "Abdalmonem",
+    "url": "https://inkedoo.com"
+  },
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abdalmonem/get-svelte"
+  },
+  "homepage": "https://github.com/abdalmonem/get-svelte#readme",
+  "bugs": {
+    "url": "https://github.com/abdalmonem/get-svelte/issues"
+  },
+  "peerDependencies": {
+    "svelte": "^5.0.0"
+  },
+  "dependencies": {
+    "@testing-library/user-event": "^14.6.1"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@testing-library/svelte": "^5.2.8",
+    "@types/node": "^22.15.21",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vitest": "^3.1.4",
+    "svelte": "^5.33.1"
+  }
+}
