@@ -13,8 +13,7 @@
     } = $props();
 
 
-
-    let update = $state(0); // dummy state to trigger reactivity
+    let updatedController = $state(controller);
 
     onMount(() => {
         if (!controller) {
@@ -27,7 +26,7 @@
     });
 
     let updateState = () => {
-        update = update+1;
+        updatedController = {...controller};
     }
 
     onDestroy(() => {
@@ -36,8 +35,7 @@
         }
     });
 
+
 </script>
 
-{#key update}
-    {@render builder(controller)}
-{/key}
+{@render builder(updatedController)}
