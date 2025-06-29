@@ -1,2 +1,4 @@
-<script lang="ts"></script>
+<script lang="ts">
+    import Get from "./Get";
+</script>
 <main></main>

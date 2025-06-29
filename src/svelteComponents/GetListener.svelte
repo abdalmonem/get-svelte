@@ -26,7 +26,13 @@
     });
 
     let updateState = () => {
-        updatedController = {...controller};
+        // Create a proxy that maintains live access to the original controller
+        // while triggering Svelte's reactivity system
+        updatedController = new Proxy(controller, {
+            get(target, prop) {
+                return target[prop];
+            }
+        });
     }
 
     onDestroy(() => {
