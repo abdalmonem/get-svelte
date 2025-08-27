@@ -13,7 +13,9 @@
   ],
   "scripts": {
     "build": "tsc && node copy-svelte-files.js",
+    "build:app": "vite build",
     "dev": "vite",
+    "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "prepublishOnly": "npm run build"

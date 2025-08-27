@@ -37,9 +37,8 @@ export default class Get{
         ControllerClass: new (...args: any[]) => T,
         { tag }: { tag?: string } = {}
     ): boolean {
-        const type = ControllerClass.name;
         return this.controllerIDS.some(
-            (c) => c.type === type && c.tag === tag
+            (c) => c.controllerConstructor === ControllerClass && c.tag === tag
         );
     }
 
@@ -54,10 +53,9 @@ export default class Get{
     static put<T extends GetxController>(controller: T, params?:GetxControllerIDParams): T {
         const id = this.generateRandomControllerID();
         const tag = params?.tag;
-        const type = controller.constructor.name;
-        // Check if already registered
+        // Check if already registered using constructor reference
         const existing = this.controllerIDS.find(
-            (c) => c.type === type && c.tag === tag
+            (c) => c.controllerConstructor === controller.constructor && c.tag === tag
         );
         if (existing) {
             return existing.controller as T;
@@ -70,9 +68,10 @@ export default class Get{
         const controllerID = new GetxControllerID({
             tag: tag,
             id: id,
-            type: type,
+            type: controller.constructor.name, // Keep for debugging but don't use for matching
             controller: controller,
             innerCaller: innerCaller,
+            controllerConstructor: controller.constructor as new (...args: any[]) => GetxController, // Add constructor reference with proper typing
         });
         this.controllerIDS.push(controllerID);
         innerCaller.callInit();
@@ -91,16 +90,15 @@ export default class Get{
         ControllerClass: new (...args: any[]) => T,
         { tag }: { tag?: string } = {}
     ): T {
-        const type = ControllerClass.name;
         const controllerID = this.controllerIDS.find(
-            (c) => c.type === type && c.tag === tag
+            (c) => c.controllerConstructor === ControllerClass && c.tag === tag
         );
 
         if (!controllerID) {
             if(tag === undefined) {
-                throw new Error(`No instance of ${type} found.`);
+                throw new Error(`No instance of ${ControllerClass.name} found.`);
             }
-            throw new Error(`No instance of ${type} with tag '${tag}' found.`);
+            throw new Error(`No instance of ${ControllerClass.name} with tag '${tag}' found.`);
         }
 
         return controllerID.controller as T;
@@ -116,9 +114,8 @@ export default class Get{
         ControllerClass: new (...args: any[]) => T,
         { tag }: { tag?: string } = {}
     ): void {
-        const type = ControllerClass.name;
         const index = this.controllerIDS.findIndex(
-            (c) => c.type === type && (tag === tag)
+            (c) => c.controllerConstructor === ControllerClass && c.tag === tag
         );
 
         if (index !== -1) {

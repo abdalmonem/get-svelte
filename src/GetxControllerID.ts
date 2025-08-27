@@ -11,6 +11,7 @@ export interface GetxControllerIDParams {
     tag: string | undefined;
     controller: GetxController,
     innerCaller: InnerCaller;
+    controllerConstructor: new (...args: any[]) => GetxController;
 }
 
 /**
@@ -34,16 +35,20 @@ export default class GetxControllerID {
     /** Reference to the controller's inner caller for lifecycle management */
     public readonly innerCaller: InnerCaller;
 
+    /** Reference to the constructor function for reliable type matching */
+    public readonly controllerConstructor: new (...args: any[]) => GetxController;
+
     /**
      * Creates a new GetxControllerID instance.
      * @param {GetxControllerIDParams} params - The parameters for initializing the controller ID
      */
-    constructor({ id , type, tag, controller, innerCaller }: GetxControllerIDParams) {
+    constructor({ id , type, tag, controller, innerCaller, controllerConstructor }: GetxControllerIDParams) {
         this.id = id;
         this.tag = tag;
         this.type = type;
         this.controller = controller;
         this.innerCaller = innerCaller;
+        this.controllerConstructor = controllerConstructor;
     }
 
     /**

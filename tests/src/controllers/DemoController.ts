@@ -9,6 +9,11 @@ export default class DemoController extends GetxController{
         this.notifyListener();
     }
 
+    setCounter(value: number) {
+        this.counter = value;
+        this.notifyListener();
+    }
+
     public onClose(): void {
         super.onClose();
         console.log("demo controller disposed");

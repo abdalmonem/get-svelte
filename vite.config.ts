@@ -10,6 +10,11 @@ export default defineConfig({
             hot: false
         })
     ],
+    build: {
+        rollupOptions: {
+            input: 'index.html'
+        }
+    },
     test: {
         environment: 'jsdom',
         globals: true,
