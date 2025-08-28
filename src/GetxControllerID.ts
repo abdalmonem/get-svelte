@@ -42,13 +42,13 @@ export default class GetxControllerID {
      * Creates a new GetxControllerID instance.
      * @param {GetxControllerIDParams} params - The parameters for initializing the controller ID
      */
-    constructor({ id , type, tag, controller, innerCaller, controllerConstructor }: GetxControllerIDParams) {
+    constructor({ id , type, tag, controller, innerCaller, controllerConstructor: ctorRef }: GetxControllerIDParams) {
         this.id = id;
         this.tag = tag;
         this.type = type;
         this.controller = controller;
         this.innerCaller = innerCaller;
-        this.controllerConstructor = controllerConstructor;
+        this.controllerConstructor = ctorRef;
     }
 
     /**

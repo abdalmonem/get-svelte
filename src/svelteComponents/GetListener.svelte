@@ -12,28 +12,42 @@
         builder: (controller: T) => T;
     } = $props();
 
+    // Create proxy immediately when controller is available - no delays
+    let updatedController = $state(
+        controller ? new Proxy(controller, {
+            get(target, prop) {
+                return target[prop];
+            }
+        }) : undefined
+    ) as T;
 
-    let updatedController = $state(controller);
+    // Update proxy when controller changes
+    $effect(() => {
+        if (controller) {
+            updatedController = new Proxy(controller, {
+                get(target, prop) {
+                    return target[prop];
+                }
+            });
+        }
+    });
 
     onMount(() => {
         if (!controller) {
             throw new Error("GetListener must be used with a GetxController instance.");
         }
+
+        // Add listener for future updates
         controller.addListener(() => {
-            updateState();
+            // Force reactivity by creating new proxy
+            updatedController = new Proxy(controller, {
+                get(target, prop) {
+                    return target[prop];
+                }
+            });
             console.log("GetListener: Controller state updated");
         });
     });
-
-    let updateState = () => {
-        // Create a proxy that maintains live access to the original controller
-        // while triggering Svelte's reactivity system
-        updatedController = new Proxy(controller, {
-            get(target, prop) {
-                return target[prop];
-            }
-        });
-    }
 
     onDestroy(() => {
         if (autoDestroy) {
@@ -41,7 +55,9 @@
         }
     });
 
-
 </script>
 
-{@render builder(updatedController)}
+<!-- Render immediately when controller is available -->
+{#if controller && updatedController}
+    {@render builder(updatedController)}
+{/if}
