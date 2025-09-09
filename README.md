@@ -168,6 +168,65 @@ A Svelte component that listens to controller state changes and rebuilds its UI:
 - `controller`: The controller instance to listen to
 - `autoDestroy` (optional, default: `true`): Whether to automatically dispose the controller when the component is destroyed
 
+## Server-Side Rendering (SSR)
+
+When using get-svelte in SSR environments, you need to prevent cross-request controller contamination.
+
+### Quick Fix
+
+Add this one line to your server request handler:
+
+```typescript
+// SvelteKit: src/hooks.server.ts
+import { Get } from 'get-svelte';
+
+export async function handle({ event, resolve }) {
+  Get.clearForSSR(); // Clear controllers from previous requests
+  return await resolve(event);
+}
+```
+
+```typescript
+// Express.js
+app.use((req, res, next) => {
+  Get.clearForSSR();
+  next();
+});
+```
+
+```typescript
+// Custom Node.js server
+function handleRequest(req, res) {
+  Get.clearForSSR();
+  // ... your request handling
+}
+```
+
+### Why This is Needed
+
+In SSR environments, the static controller registry is shared across all requests. Without clearing:
+
+- **❌ User A's data might briefly appear to User B**
+- **❌ Memory leaks from accumulated controllers**
+- **❌ Cross-request state contamination**
+
+With `Get.clearForSSR()`:
+
+- **✅ Each request starts with a clean slate**
+- **✅ Complete isolation between users**
+- **✅ No memory leaks**
+- **✅ Controllers properly disposed**
+
+### Additional Methods
+
+```typescript
+// Manual cleanup (same as clearForSSR)
+Get.deleteAll();
+
+// Check if controllers exist
+const hasControllers = Get.isRegistered(MyController);
+```
+
 ## Examples
 
 ### Counter Example

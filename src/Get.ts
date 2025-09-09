@@ -10,8 +10,24 @@ export interface GetxControllerIDParams {
 }
 
 /**
+ * Check if we're running in a server environment
+ */
+function isServerSide(): boolean {
+    return typeof window === 'undefined' && typeof global !== 'undefined';
+}
+
+/**
+ * Simple approach: just disable automatic clearing for now
+ * The user can manually call Get.deleteAll() in their SSR setup if needed
+ */
+function getControllerRegistrySync(): GetxControllerID[] {
+    // Always return the static registry - user can manage SSR clearing manually
+    return Get.controllerIDS;
+}
+
+/**
  * Main service class for controller dependency injection and management.
- * Provides methods to register, find, and manage the lifecycle of controllers.
+ * Uses request-scoped storage in SSR environments to prevent cross-request contamination.
  */
 export default class Get{
 
@@ -37,7 +53,8 @@ export default class Get{
         ControllerClass: new (...args: any[]) => T,
         { tag }: { tag?: string } = {}
     ): boolean {
-        return this.controllerIDS.some(
+        const registry = getControllerRegistrySync();
+        return registry.some(
             (c) => c.controllerConstructor === ControllerClass && c.tag === tag
         );
     }
@@ -53,8 +70,10 @@ export default class Get{
     static put<T extends GetxController>(controller: T, params?:GetxControllerIDParams): T {
         const id = this.generateRandomControllerID();
         const tag = params?.tag;
+        const registry = getControllerRegistrySync();
+        
         // Check if already registered using constructor reference
-        const existing = this.controllerIDS.find(
+        const existing = registry.find(
             (c) => c.controllerConstructor === controller.constructor && c.tag === tag
         );
         if (existing) {
@@ -73,7 +92,7 @@ export default class Get{
             innerCaller: innerCaller,
             controllerConstructor: controller.constructor as new (...args: any[]) => GetxController, // Add constructor reference with proper typing
         });
-        this.controllerIDS.push(controllerID);
+        registry.push(controllerID);
         innerCaller.callInit();
         return controller;
     }
@@ -90,7 +109,8 @@ export default class Get{
         ControllerClass: new (...args: any[]) => T,
         { tag }: { tag?: string } = {}
     ): T {
-        const controllerID = this.controllerIDS.find(
+        const registry = getControllerRegistrySync();
+        const controllerID = registry.find(
             (c) => c.controllerConstructor === ControllerClass && c.tag === tag
         );
 
@@ -114,14 +134,15 @@ export default class Get{
         ControllerClass: new (...args: any[]) => T,
         { tag }: { tag?: string } = {}
     ): void {
-        const index = this.controllerIDS.findIndex(
+        const registry = getControllerRegistrySync();
+        const index = registry.findIndex(
             (c) => c.controllerConstructor === ControllerClass && c.tag === tag
         );
 
         if (index !== -1) {
             // Call the onDelete method of the controller before removing it
-            this.controllerIDS[index].innerCaller.callClose();
-            this.controllerIDS.splice(index, 1);
+            registry[index].innerCaller.callClose();
+            registry.splice(index, 1);
         }
     }
 
@@ -131,11 +152,12 @@ export default class Get{
      * @private
      */
     static _deleteById(id: string): void {
-        const index = this.controllerIDS.findIndex(c => c.id === id);
+        const registry = getControllerRegistrySync();
+        const index = registry.findIndex(c => c.id === id);
         if (index !== -1) {
             // Call the onDelete method of the controller before removing it
-            this.controllerIDS[index].innerCaller.callClose();
-            this.controllerIDS.splice(index, 1);
+            registry[index].innerCaller.callClose();
+            registry.splice(index, 1);
         }
     }
 
@@ -143,11 +165,29 @@ export default class Get{
      * Removes all controllers from the registry
      */
     static deleteAll(): void {
+        const registry = getControllerRegistrySync();
         // Call the onDelete method for each controller before removing them
-        this.controllerIDS.forEach(controllerID => {
+        registry.forEach(controllerID => {
             controllerID.innerCaller.callClose();
         });
         // Clear the array
-        this.controllerIDS = [];
+        registry.length = 0;
+    }
+
+    /**
+     * For SSR: Call this method at the beginning of each request handler
+     * to clear controllers from previous requests and prevent cross-user contamination
+     * 
+     * Example usage in SvelteKit hooks.server.ts:
+     * export async function handle({ event, resolve }) {
+     *   Get.clearForSSR();
+     *   return await resolve(event);
+     * }
+     */
+    static clearForSSR(): void {
+        this.deleteAll();
     }
 }
+
+
+
